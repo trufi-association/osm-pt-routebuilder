@@ -160,7 +160,7 @@ elif selected_relations and not selected_ways:
                 "Relacion {} actualizada con {} miembros.\n\n"
                 "ATENCION:\n"
                 "Todos los miembros anteriores fueron reemplazados.\n"
-                "Revisa la relacion en el mapa para asegurarte de que no haya interrupciones o errores antes de subir los cambios.".format(relation.getUniqueId(), len(nuevos_miembros))
+                "Revisa la relacion en el mapa para asegurarte de que no haya interrupciones o errores antes de subir los cambios.".format(relation.getUniqueId(), len(new_members))
             )
         else:
             JOptionPane.showMessageDialog(None, "No se pudieron agregar miembros a la relación.")
