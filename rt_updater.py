@@ -125,29 +125,36 @@ elif selected_relations and not selected_ways:
     else:
         relation = selected_relations[0]
         new_members = []
+
+        # ==== BLOQUE NUEVO: descarga masiva desde Overpass ====
+        try:
+            import urllib
+            from java.net import URL
+            from java.io import ByteArrayInputStream
+            from org.openstreetmap.josm.io import OsmReader
+
+            # Construir consulta Overpass
+            query = '[out:xml][timeout:25];('
+            for wid in way_ids:
+                query += 'way(' + str(wid) + ');'
+            query += ');(._;>;);out meta;'
+
+            encoded_query = urllib.quote(query, safe='')
+            overpass_url = 'https://overpass-api.de/api/interpreter?data=' + encoded_query
+            input_stream = URL(overpass_url).openStream()
+            downloaded_data = OsmReader.parseDataSet(input_stream, None)
+            edit_layer.mergeFrom(downloaded_data)
+        except Exception as e:
+            JOptionPane.showMessageDialog(None, "❌ Error al descargar las vías desde Overpass:\n{}".format(str(e)))
+        # ==== FIN BLOQUE NUEVO ====
+
+        # Buscar las vías descargadas dentro de la capa
         for wid in way_ids:
             way = None
             for primitive in edit_layer.allPrimitives():
                 if isinstance(primitive, Way) and primitive.getId() == wid:
                     way = primitive
                     break
-
-            if not way:
-                try:
-                    url = "https://api.openstreetmap.org/api/0.6/way/{}/full".format(wid)
-                    response = urllib2.urlopen(url)
-                    xml_data = response.read()
-                    input_stream = ByteArrayInputStream(xml_data.encode("utf-8"))
-                    downloaded_data = OsmReader.parseDataSet(input_stream, None)
-                    edit_layer.mergeFrom(downloaded_data)
-
-                    for primitive in edit_layer.allPrimitives():
-                        if isinstance(primitive, Way) and primitive.getId() == wid:
-                            way = primitive
-                            break
-                except Exception as e:
-                    JOptionPane.showMessageDialog(None, "Error al descargar la vía {}:\n{}".format(wid, str(e)))
-
             if way:
                 new_members.append(RelationMember("", way))
 
